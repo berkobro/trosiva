@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checkout | Trosiva</title>
+  <meta name="description" content="Review your Trosiva cart and check out.">
+  <link rel="icon" href="assets/img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:ital,wght@0,400;0,500;0,600;0,700;0,800;1,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="checkout">
+
+<section style="padding-top:60px">
+  <div class="wrap">
+    <p class="label">Checkout</p>
+    <h1 style="font-size:clamp(48px,6vw,78px)">Your order</h1>
+    <div class="rule"></div>
+
+    <div class="checkout-grid">
+      <form class="card" id="ship-form" novalidate>
+        <h3>Shipping details</h3>
+        <div class="form-grid">
+          <div class="field"><label for="fn">First name</label><input id="fn" autocomplete="given-name" required></div>
+          <div class="field"><label for="ln">Last name</label><input id="ln" autocomplete="family-name" required></div>
+          <div class="field wide"><label for="em">Email</label><input id="em" type="email" autocomplete="email" required></div>
+          <div class="field wide"><label for="ad">Address</label><input id="ad" autocomplete="street-address" required></div>
+          <div class="field"><label for="ci">City</label><input id="ci" autocomplete="address-level2" required></div>
+          <div class="field"><label for="st">State</label><input id="st" autocomplete="address-level1" required></div>
+          <div class="field"><label for="zp">ZIP</label><input id="zp" autocomplete="postal-code" inputmode="numeric" required></div>
+        </div>
+        <button class="btn btn-solid full" style="margin-top:22px" type="submit" id="place">Place order</button>
+        <p class="notice" id="notice">Online payment is coming soon. Orders can't be paid on the site yet.</p>
+      </form>
+
+      <aside class="card">
+        <h3>Summary</h3>
+        <div id="summary-items" style="margin-top:8px"></div>
+        <div class="totals" style="margin-top:16px">
+          <div><span>Subtotal</span><span id="sum-sub">$0.00</span></div>
+          <div><span>Shipping</span><span>Calculated later</span></div>
+          <div class="grand"><span>Total</span><span id="sum-total">$0.00</span></div>
+        </div>
+        <a href="shop.html" style="color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-size:15px">← Keep shopping</a>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  const { Cart, money, lineItemHTML, showToast } = window.Trosiva;
+  function render() {
+    const items = Cart.items();
+    document.getElementById("summary-items").innerHTML = items.length
+      ? items.map(lineItemHTML).join("")
+      : `<p class="empty">Your cart is empty.<br><br><a class="btn btn-ghost" href="shop.html">Shop discs</a></p>`;
+    document.getElementById("sum-sub").textContent = money(Cart.subtotal());
+    document.getElementById("sum-total").textContent = money(Cart.subtotal());
+    document.getElementById("place").disabled = !items.length;
+    document.getElementById("place").style.opacity = items.length ? 1 : 0.4;
+  }
+  document.addEventListener("cart:change", render);
+  document.getElementById("ship-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    showToast("Payments are coming soon");
+    document.getElementById("notice").style.borderColor = "#fff";
+  });
+  render();
+})();
+</script>
+</body>
+</html>

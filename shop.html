@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Shop | Trosiva</title>
+  <meta name="description" content="Buy Trosiva trash bag discs in boxes of 5, 10, 15 or 20 discs. 5 bags per disc.">
+  <link rel="icon" href="assets/img/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:ital,wght@0,400;0,500;0,600;0,700;0,800;1,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-page="shop">
+
+<section style="padding-top:60px">
+  <div class="wrap shop-grid">
+    <div class="gallery">
+      <div class="main"><img src="assets/img/disc.jpg" alt="A Trosiva disc: five black trash bags stacked and joined by perforations" width="1672" height="941"></div>
+      <p class="note">1 disc = 5 bags joined by perforations</p>
+    </div>
+
+    <div>
+      <p class="label">Trosiva trash bags · 13 gallon</p>
+      <h1 style="font-size:clamp(48px,6vw,78px)">Trosiva Discs</h1>
+      <div class="big-price" id="price">$9.99<small id="price-sub">25 bags</small></div>
+      <div class="rule"></div>
+
+      <p class="label" id="pack-label">Choose your box</p>
+      <div class="packs" role="radiogroup" aria-labelledby="pack-label" id="packs"></div>
+
+      <div class="qty-row">
+        <div class="stepper" aria-label="Number of boxes">
+          <button type="button" id="q-dec" aria-label="Fewer boxes">−</button>
+          <output id="q">1</output>
+          <button type="button" id="q-inc" aria-label="More boxes">+</button>
+        </div>
+        <button class="btn btn-solid add-btn" id="add">Add to cart</button>
+      </div>
+
+      <ul class="ticks">
+        <li>5 bags connected by perforation per disc</li>
+        <li>Fits standard 13-gallon kitchen cans</li>
+        <li>Replace the bag in seconds, without reaching into the bin</li>
+      </ul>
+      <p style="margin-top:26px"><a href="how-it-works.html" style="color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-size:16px">How does it work? →</a></p>
+    </div>
+  </div>
+</section>
+
+<script src="assets/site.js"></script>
+<script>
+(function () {
+  const { PRODUCTS, BAGS_PER_DISC, Cart, money, openCart, showToast } = window.Trosiva;
+  const ids = Object.keys(PRODUCTS);
+  const basePer = PRODUCTS["disc-5"].price / PRODUCTS["disc-5"].discs;
+  let selected = "disc-5", qty = 1;
+  const packs = document.getElementById("packs");
+
+  packs.innerHTML = ids.map((id) => {
+    const p = PRODUCTS[id];
+    const save = Math.round((1 - p.price / p.discs / basePer) * 100);
+    return `<button type="button" class="pack" role="radio" data-id="${id}" aria-checked="false">
+      ${save > 0 ? `<span class="badge">Save ${save}%</span>` : ""}
+      <div class="qty">${p.discs}<small>Discs</small></div>
+      <div class="bags">${p.discs * BAGS_PER_DISC} bags</div>
+      <div class="price">${money(p.price)}</div>
+      <div class="per">${money(p.price / p.discs)} / disc</div>
+    </button>`;
+  }).join("");
+
+  function update() {
+    packs.querySelectorAll(".pack").forEach((b) => b.setAttribute("aria-checked", b.dataset.id === selected));
+    const p = PRODUCTS[selected];
+    document.getElementById("price").firstChild.nodeValue = money(p.price * qty);
+    document.getElementById("price-sub").textContent = `${p.discs * BAGS_PER_DISC * qty} bags` + (qty > 1 ? ` · ${qty} boxes` : "");
+    document.getElementById("q").textContent = qty;
+  }
+  packs.addEventListener("click", (e) => {
+    const b = e.target.closest(".pack"); if (!b) return;
+    selected = b.dataset.id; update();
+  });
+  packs.addEventListener("keydown", (e) => {
+    if (!["ArrowRight", "ArrowDown", "ArrowLeft", "ArrowUp"].includes(e.key)) return;
+    e.preventDefault();
+    const i = ids.indexOf(selected) + (e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : -1);
+    selected = ids[(i + ids.length) % ids.length]; update();
+    packs.querySelector(`[data-id="${selected}"]`).focus();
+  });
+  document.getElementById("q-dec").onclick = () => { qty = Math.max(1, qty - 1); update(); };
+  document.getElementById("q-inc").onclick = () => { qty = Math.min(99, qty + 1); update(); };
+  document.getElementById("add").onclick = () => {
+    Cart.add(selected, qty);
+    showToast(`Added ${qty} × ${PRODUCTS[selected].discs}-disc box`);
+    openCart();
+  };
+  update();
+})();
+</script>
+</body>
+</html>
